@@ -1,11 +1,11 @@
 import { useDispatch, useSelector } from "react-redux"
-import { addTodo, deleteTodo } from "../store/todosReducer"
-import { useState } from "react"
+import { addTodo, toggleTodo, deleteTodo, fetchTodos } from "../store/todosReducer"
+import { useEffect, useState } from "react"
 
 
 const TodoList = () => {
+    const {items, loading, error} = useSelector(state => state.todos)
     const [newTodo, setNewTodo] = useState('')
-    const todos = useSelector(state => state.todos.items)
     const dispatch = useDispatch()
 
     const onAdd = () => {
@@ -14,6 +14,13 @@ const TodoList = () => {
             setNewTodo('')
         }
     }
+
+    useEffect(() => {
+        dispatch(fetchTodos())
+    }, [dispatch])
+
+    if (loading) return <h3>Данные загружаются</h3>
+    if (error) return <h3>{error}</h3>
 
     return (
         <div>
@@ -27,13 +34,13 @@ const TodoList = () => {
                 <button onClick={onAdd}>Добавить</button>
             </div>
             <div>
-                {todos.length>0 && 
+                {items.length>0 && 
                 <ol>
-                    {todos.map(t => 
+                    {items.map(t => 
                         <li 
                             key={t.id}
                             onClick={e => dispatch(deleteTodo(t.id))}
-                        >{t.text}</li>
+                        >{t.title}</li>
                     )}
                 </ol>
                 }
