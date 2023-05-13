@@ -1,6 +1,12 @@
 import { createSlice, nanoid, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from 'axios'
 
+// CRUD 
+// Create - создать    POST
+// Read - много Todo   GET
+// Read - один Todo    GET (:id)
+// Update - изменить   PUT, POST (:id)
+// Delete - удалить    DELETE (:id)
 
 export const fetchTodos = createAsyncThunk(
     'todos/fetchTodos',
@@ -11,13 +17,11 @@ export const fetchTodos = createAsyncThunk(
     }
 )
 
-
-// addRemoteTodo
-export const addAsyncTodo = createAsyncThunk(
-    'todos/addAsyncTodo',
-    async (title) => {
+export const updateTodo = createAsyncThunk(
+    'todos/updateTodo',
+    async ({todoId, title}) => {
         return axios
-            .post('https://jsonplaceholder.typicode.com/todos?_limit=15',
+            .put(`https://jsonplaceholder.typicode.com/todos/${todoId}`,
                 {
                     "userId": 1,
                     "title": title,
@@ -27,6 +31,7 @@ export const addAsyncTodo = createAsyncThunk(
             .then(resp => resp.data)
     }
 )
+
 
 const todoSlice = createSlice({
     name: 'todos',
@@ -79,8 +84,17 @@ const todoSlice = createSlice({
             state.items = []
             state.error = action.error.message
         })
+        builder.addCase(updateTodo.fulfilled, (state, action) => {
+            const todoIndex = state.items.findIndex(
+                item => item.id === action.payload.id
+            )
+            if (todoIndex > -1) {
+                state.items[todoIndex] = action.payload
+            }
+        })
     }
 })
+
 
 export const { addTodo, toggleTodo, deleteTodo } = todoSlice.actions
 export default todoSlice.reducer
